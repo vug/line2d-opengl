@@ -14,6 +14,9 @@
 #include "VertexBuffer.h"
 #include "VertexBufferLayout.h"
 
+#include "glm/glm.hpp"
+#include "glm/gtc/matrix_transform.hpp"
+
 
 int main(void)
 {
@@ -71,9 +74,15 @@ int main(void)
 	vertexArray.AddBuffer(vertexBuffer, layout);
 
 	IndexBuffer indexBuffer(indices, 2 * 3);
+	glm::mat4 projection = glm::ortho(-1.0f, 1.0f, -1.0f, 1.0f, -1.0f, 1.0f);  // normalized coordinates
+	glm::mat4 view = glm::mat4(1.0f);
+	glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, 0));
+
+	glm::mat4 mvp = projection * view * model;
 
 	Shader shader("res/shaders/Light2Db.shader");
 	shader.Bind();
+	shader.SetUniformMat4f("u_MVP", mvp);
 
 	// Unbound/Clear everything
 	vertexArray.Unbind();
