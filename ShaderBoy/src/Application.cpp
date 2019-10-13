@@ -5,6 +5,9 @@
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
+#include "imgui/imgui.h"
+#include "imgui/imgui_impl_opengl3.h"
+#include "imgui/imgui_impl_glfw.h"
 
 #include "IndexBuffer.h"
 #include "Renderer.h"
@@ -21,8 +24,6 @@
 int main(void)
 {
 	GLFWwindow* window;
-
-	/* Initialize the library */
 	if (!glfwInit())
 		return -1;
 
@@ -30,7 +31,6 @@ int main(void)
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	
-	/* Create a windowed mode window and its OpenGL context */
 	window = glfwCreateWindow(1024, 1024, "Hello World", NULL, NULL);
 	if (!window)
 	{
@@ -38,9 +38,7 @@ int main(void)
 		return -1;
 	}
 
-	/* Make the window's context current */
 	glfwMakeContextCurrent(window);
-
 	glfwSwapInterval(1);
 
 	if (glewInit() != GLEW_OK)
@@ -92,6 +90,12 @@ int main(void)
 
 	Renderer renderer;
 
+	ImGui::CreateContext();
+	ImGui_ImplGlfw_InitForOpenGL(window, true);
+	const char* glsl_version = "#version 460";
+	ImGui_ImplOpenGL3_Init(glsl_version);
+	ImGui::StyleColorsDark();
+
 	float red = 0.0f;
 	float increment = 0.05f;
 	float time;
@@ -102,6 +106,10 @@ int main(void)
 	while (!glfwWindowShouldClose(window))
 	{
 		renderer.Clear();
+
+		ImGui_ImplOpenGL3_NewFrame();
+		ImGui_ImplGlfw_NewFrame();
+		ImGui::NewFrame();
 
 		shader.Bind();
 		glfwGetWindowSize(window, &windowWidth, &windowHeight);
@@ -117,16 +125,24 @@ int main(void)
 
 		renderer.Draw(vertexArray, indexBuffer, shader);
 
+		ImGui::Begin("My GUI");
+		ImGui::SliderFloat("redness", &red, 0.0, 1.0);
+		ImGui::End();
+
+		ImGui::Render();
+		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
 		if (red > 1.0f) increment = -0.05f;
 		else if (red < 0.0f) increment = 0.05f;
 		red += increment;
 
-		/* Swap front and back buffers */
 		glfwSwapBuffers(window);
-
-		/* Poll for and process events */
 		glfwPollEvents();
 	}
+
+	ImGui_ImplOpenGL3_Shutdown();
+	ImGui_ImplGlfw_Shutdown();
+	ImGui::DestroyContext();
 
 	glfwTerminate();
 	return 0;
