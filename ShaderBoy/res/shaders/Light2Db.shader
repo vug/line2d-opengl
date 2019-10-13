@@ -32,6 +32,7 @@ in vec2 v_TexCoord;
 uniform ivec2 u_Resolution;
 uniform float u_Time;
 uniform vec2 u_Mouse;
+uniform float u_ReflectionCoef = 0.1;
 
 
 /**
@@ -160,8 +161,8 @@ Result scene1(vec2 p, vec2 c) {
 	Result a = Result(circleSDF(p, c, 0.1f), 2.0f, 0.0f);
 	Result b = Result(boxSDF(p, vec2(0.5f, 0.8f), TWO_PI / 16.0f, vec2(0.1f, 0.1f)), 0.0f, 0.9f);
 	Result cc = Result(boxSDF(p, vec2(0.8f, 0.5f), TWO_PI / 16.0f, vec2(0.1f, 0.1f)), 0.0f, 0.9f);
-	Result d = Result(planeSDF(p, vec2(0.0f, 0.5f), vec2(0.0f, -1.0f)), 0.0f, 0.9f);
-	Result e = Result(circleSDF(p, vec2(0.5f, 0.5f), 0.4f), 0.0f, 0.9f);
+	Result d = Result(planeSDF(p, vec2(0.0f, 0.5f), vec2(0.0f, -1.0f)), 0.0f, u_ReflectionCoef);
+	Result e = Result(circleSDF(p, vec2(0.5f, 0.5f), 0.4f), 0.0f, u_ReflectionCoef);
 	//return unionOp(unionOp(a, b), cc);
 	return unionOp(a, subtractOp(d, e));
 	//return unionOp(a, d);
