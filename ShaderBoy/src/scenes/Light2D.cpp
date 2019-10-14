@@ -54,8 +54,8 @@ void Light2D::OnRender()
 
 	m_Shader->Bind();
 	m_Shader->SetUniform1f("u_ReflectionCoef", m_ReflectionCoef);
-	//glfwGetWindowSize(window, &windowWidth, &windowHeight);
-	int windowWidth = 1024, windowHeight = 1024;
+	int windowWidth, windowHeight;
+	glfwGetWindowSize(m_Window, &windowWidth, &windowHeight);
 	m_Shader->SetUniform2i("u_Resolution", windowWidth, windowHeight);
 	double time = glfwGetTime();
 	m_Shader->SetUniform1f("u_Time", time);
