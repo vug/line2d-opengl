@@ -5,6 +5,8 @@ VisualStudioVersion = 15.0.28307.271
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ShaderBoy", "ShaderBoy\ShaderBoy.vcxproj", "{1497EBC3-5C6E-45BE-BEF7-92805BBBF55D}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RecursionStudies", "RecursionStudies\RecursionStudies.vcxproj", "{3D973333-B328-4E9E-8891-305FCF1DF4F9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -21,6 +23,14 @@ Global
 		{1497EBC3-5C6E-45BE-BEF7-92805BBBF55D}.Release|x64.Build.0 = Release|x64
 		{1497EBC3-5C6E-45BE-BEF7-92805BBBF55D}.Release|x86.ActiveCfg = Release|Win32
 		{1497EBC3-5C6E-45BE-BEF7-92805BBBF55D}.Release|x86.Build.0 = Release|Win32
+		{3D973333-B328-4E9E-8891-305FCF1DF4F9}.Debug|x64.ActiveCfg = Debug|x64
+		{3D973333-B328-4E9E-8891-305FCF1DF4F9}.Debug|x64.Build.0 = Debug|x64
+		{3D973333-B328-4E9E-8891-305FCF1DF4F9}.Debug|x86.ActiveCfg = Debug|Win32
+		{3D973333-B328-4E9E-8891-305FCF1DF4F9}.Debug|x86.Build.0 = Debug|Win32
+		{3D973333-B328-4E9E-8891-305FCF1DF4F9}.Release|x64.ActiveCfg = Release|x64
+		{3D973333-B328-4E9E-8891-305FCF1DF4F9}.Release|x64.Build.0 = Release|x64
+		{3D973333-B328-4E9E-8891-305FCF1DF4F9}.Release|x86.ActiveCfg = Release|Win32
+		{3D973333-B328-4E9E-8891-305FCF1DF4F9}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
