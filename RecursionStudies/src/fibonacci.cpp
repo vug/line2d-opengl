@@ -10,6 +10,7 @@ std::ostream& operator<<(std::ostream& os, const FibonacciFrame& fr)
 }
 
 int fibonacci(int n) {
+	// stage-0
 	if (n == 0) {
 		return 0;
 	}
@@ -17,7 +18,14 @@ int fibonacci(int n) {
 		return 1;
 	}
 	else {
-		return fibonacci(n - 1) + fibonacci(n - 2);
+		// stage-1/2
+		// return fibonacci(n - 1) + fibonacci(n - 2);
+
+		// stage-1
+		int tmp1 = fibonacci(n - 1);
+		// stage-2
+		int tmp2 = fibonacci(n - 2);
+		return tmp1 + tmp2;
 	}
 }
 
