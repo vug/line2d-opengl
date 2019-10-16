@@ -4,11 +4,11 @@
 #include "utils.h"
 
 template<typename T>
-std::ostream& operator<<(std::ostream& os, const std::vector<T>& stack)
+std::ostream& operator<<(std::ostream& os, const std::vector<T>& vector)
 {
-	for (auto const& frame : stack) {
-		os << frame << std::endl;
+	for (auto const& item : vector) {
+		os << item << std::endl;
 	}
-	os << stack.size() << std::endl;
+	os << vector.size() << std::endl;
 	return os;
 }

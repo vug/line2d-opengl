@@ -115,12 +115,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\binary_tree.cpp" />
     <ClCompile Include="src\factorial.cpp" />
     <ClCompile Include="src\fibonacci.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\utils.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\binary_tree.h" />
     <ClInclude Include="src\factorial.h" />
     <ClInclude Include="src\fibonacci.h" />
     <ClInclude Include="src\utils.h" />
