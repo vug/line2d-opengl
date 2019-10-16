@@ -1,8 +1,12 @@
 #pragma once
 
 struct FibonacciFrame {
-	int n;
+	// phase in recursive calls
 	int stage;
+	// input arguments
+	int n;
+	// intermediate values
+	int fib_acc = 0;
 };
 
 int fibonacci(int n);

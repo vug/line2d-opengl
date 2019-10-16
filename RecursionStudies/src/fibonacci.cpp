@@ -31,28 +31,44 @@ int fibonacci(int n) {
 
 int fibonacci2(int n) {
 	std::vector<FibonacciFrame> stack;
-	stack.push_back(FibonacciFrame{ n, 0 });
-	int retVal = 0;
+	stack.push_back(FibonacciFrame{ 0, n, 0 });
+	int returnValue = 0;
 
 	while (stack.size() > 0) {
 		FibonacciFrame frame = stack.back();
 		stack.pop_back();
-		//std::cout << "frame: " << frame << std::endl;
-		if (frame.stage == 0) {
-			if (frame.n == 0) {
-				stack.push_back(FibonacciFrame{ 0, 1 });
+		
+		switch (frame.stage) {
+		case 0: // before calling fib[n-1]
+			// stopping condition
+			if (frame.n == 0 || frame.n == 1) {
+				returnValue = frame.n;
+				continue; // a.k.a return
 			}
-			else if (frame.n == 1) {
-				stack.push_back(FibonacciFrame{ 1, 1 });
-			}
-			else {
-				stack.push_back(FibonacciFrame{ frame.n - 1, 0 });
-				stack.push_back(FibonacciFrame{ frame.n - 2, 0 });
-			}
-		}
-		else {
-			retVal += frame.n;
+			// store current frame before doing recursive call
+			frame.stage += 1;
+			stack.push_back(frame);
+
+			// frame of recursive call fib[n-1]
+			stack.push_back(FibonacciFrame{ 0, frame.n - 1, 0 });
+			break;
+		case 1: // after calling fib[n-1]
+			// store return value from fib[n-1] in the frame to use it in next stage
+			frame.fib_acc = returnValue;
+
+			// store current frame before doing second recursive call
+			frame.stage += 1;
+			stack.push_back(frame);
+
+			// frame of recursive call fib[n-1]
+			stack.push_back(FibonacciFrame{ 0, frame.n - 2, 0 });
+			break;
+		case 2: // after calling fib[n-2]
+			frame.fib_acc += returnValue;  // fib[n-1] + fib[n-2]
+			returnValue = frame.fib_acc;
+			continue; // a.k.a return
+			break;
 		}
 	}
-	return retVal;
+	return returnValue;
 }
