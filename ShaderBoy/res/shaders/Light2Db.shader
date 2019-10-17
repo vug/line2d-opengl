@@ -187,34 +187,154 @@ vec2 gradient(vec2 p, vec2 c) {
 	return normalize(g);
 }
 
-float trace(vec2 o, vec2 d, vec2 c) {  // with material
-	float t = 0.0f;
-	float total = 0.0f;
-	int depth = 0;
-	float prev_ref = 1.0;
-	for (int i = 0; i < MAX_STEP && t < MAX_DISTANCE; i++) {
-		vec2 p = o + d * t;
-		Result res = scene(p, c);
-		if (res.sd < EPSILON) {
-			total += res.emission * prev_ref;
-			if (depth < MAX_DEPTH && res.reflection > 0.0f) {
-				vec2 n = gradient(p, c);
-				vec2 ref = reflect(d, n);
-				o = p + n * BIAS;
-				d = normalize(ref);
-				depth += 1;
-				i = 0;
-				t = 0.0f;
-				prev_ref = res.reflection;
+struct TraceFrame {
+	// process division
+	int stage;
+	// input arguments
+	vec2 o;
+	vec2 d;
+	int depth;
+	// vec2 c; // c does not change in recursive calls
+	// local variables
+	float t;
+	float brightness_acc;
+	Result res;
+};
+
+TraceFrame stack[10];
+int size = 0;
+
+void push(TraceFrame frame) {
+	size += 1;
+	stack[size - 1] = frame;
+}
+
+TraceFrame pop() {
+	TraceFrame frame = stack[size - 1];
+	size -= 1;
+	return frame;
+}
+
+float trace1Iter(vec2 o, vec2 d, vec2 c) {
+	float retVal = 0.0f;
+	
+	push(TraceFrame(0, o, d, 0, 0.0f, 0.0f, Result(0.0f, 0.0f, 0.0f)));
+	while (size > 0) {
+		TraceFrame fr = pop();
+		switch (fr.stage) {
+		case 0:
+			int i = 0;
+			for (; i < MAX_STEP && fr.t < MAX_DISTANCE; i++) { // ray-march
+				fr.res = scene(fr.o + fr.d * fr.t, c);
+				if (fr.res.sd < EPSILON) {
+					break;
+				}
+				fr.t += fr.res.sd;
 			}
-			else {
-				break;
+			if (i == MAX_STEP || fr.t >= MAX_DISTANCE) { // no light source is hit
+				retVal = 0.0f;
+				continue;
+			}
+			else { // light source hit
+				retVal = fr.res.emission;
+				continue;
 			}
 		}
+	}
+
+	return retVal;
+}
+
+float trace1Rec(vec2 o, vec2 d, vec2 c) {  // with material
+	float t = 0.0f;
+	for (int i = 0; i < MAX_STEP && t < MAX_DISTANCE; i++) {
+		Result res = scene(o + d * t, c);
+		if (res.sd < EPSILON)
+			return res.emission;
 		t += res.sd;
 	}
-	return total;
+	return 0.0f;
 }
+
+float trace2Iter(vec2 o, vec2 d, vec2 c) {
+	float retVal = 0.0f;
+
+	push(TraceFrame(0, o, d, 0, 0.0f, 0.0f, Result(0.0f, 0.0f, 0.0f)));
+	while (size > 0) {
+		TraceFrame fr = pop();
+		switch (fr.stage) {
+		case 0:
+			int i = 0;
+			vec2 p;
+			for (; i < MAX_STEP && fr.t < MAX_DISTANCE; i++) { // ray-march
+				p = fr.o + fr.d * fr.t;
+				fr.res = scene(p, c);
+				if (fr.res.sd < EPSILON) {
+					break;
+				}
+				fr.t += fr.res.sd;
+			}
+			if (i == MAX_STEP || fr.t >= MAX_DISTANCE) { // nothing hit
+				retVal = 0.0f;
+				continue;
+			}
+			else { // something hit
+				fr.brightness_acc = fr.res.emission;
+				if (fr.depth < MAX_DEPTH && fr.res.reflection > 0.0f) { // reflect from reflective surface
+					vec2 n = gradient(p, c);
+					vec2 ref = reflect(fr.d, n);
+					
+					fr.stage += 1;
+					push(fr);
+					push(TraceFrame(0, p + n * BIAS, normalize(ref), fr.depth + 1, 0.0f, 0.0f, Result(0.0f, 0.0f, 0.0f)));
+				}
+				else {
+					retVal = fr.brightness_acc;
+					continue;
+				}
+			}
+			break;
+		case 1:
+			fr.brightness_acc += fr.res.reflection * retVal;
+			retVal = fr.brightness_acc;
+			continue;
+			break;
+		}
+	}
+
+	return retVal;
+}
+
+
+//float trace2_old(vec2 o, vec2 d, vec2 c) {
+//	float t = 0.0f;
+//	float total = 0.0f;
+//	int depth = 0;
+//	float prev_ref = 1.0;
+//	for (int i = 0; i < MAX_STEP && t < MAX_DISTANCE; i++) {
+//		vec2 p = o + d * t;
+//		Result res = scene(p, c);
+//		if (res.sd < EPSILON) {
+//			return res.emission;
+//			total += res.emission * prev_ref;
+//			if (depth < MAX_DEPTH && res.reflection > 0.0f) {
+//				vec2 n = gradient(p, c);
+//				vec2 ref = reflect(d, n);
+//				o = p + n * BIAS;
+//				d = normalize(ref);
+//				depth += 1;
+//				i = 0;
+//				t = 0.0f;
+//				prev_ref = res.reflection;
+//			}
+//			else {
+//				break;
+//			}
+//		}
+//		t += res.sd;
+//	}
+//	return total;
+//}
 
 
 float sample(vec2 p, vec2 c) {
@@ -225,7 +345,8 @@ float sample(vec2 p, vec2 c) {
 		//float a = TWO_PI * i / N; // stratified
 		float a = TWO_PI * (i + random(vec3(p, f))) / N; // jittered
 		vec2 dir = vec2(cos(a), sin(a));
-		total += trace(p, dir, c);
+		//total += trace2(p, dir, c);
+		total += trace2Iter(p, dir, c);
 	}
 	return total / N;
 }
