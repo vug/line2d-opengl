@@ -34,7 +34,7 @@ Light2D::Light2D(GLFWwindow* window)
 	glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, 0));
 	glm::mat4 mvp = projection * view * model;
 
-	m_Shader = std::make_unique<Shader>("res/shaders/Light2Db.shader");
+	m_Shader = std::make_unique<Shader>("res/shaders/Light2Dc.shader");
 	m_Shader->Bind();
 	m_Shader->SetUniformMat4f("u_MVP", mvp);
 
