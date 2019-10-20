@@ -118,6 +118,7 @@
     <ClCompile Include="src\binary_tree.cpp" />
     <ClCompile Include="src\factorial.cpp" />
     <ClCompile Include="src\fibonacci.cpp" />
+    <ClCompile Include="src\glsl.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\utils.cpp" />
   </ItemGroup>
@@ -125,8 +126,10 @@
     <ClInclude Include="src\binary_tree.h" />
     <ClInclude Include="src\factorial.h" />
     <ClInclude Include="src\fibonacci.h" />
+    <ClInclude Include="src\glsl.h" />
     <ClInclude Include="src\utils.h" />
     <ClInclude Include="src\vendor\stb_image_write.h" />
+    <ClInclude Include="src\tests.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
