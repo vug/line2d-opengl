@@ -31,3 +31,18 @@ void test_factorial_and_fibonacci() {
 			<< std::endl;
 	}
 }
+
+void test_image_write() {
+	const int width = 500, height = 500, channels = 1;
+	unsigned char img[width][height];
+
+	for (int i = 0; i < width; i++) {
+		for (int j = 0; j < height; j++) {
+			int y_cell = (i % 50 < 25) ? 1 : -1;
+			int x_cell = (j % 50 < 25) ? 1 : -1;
+			int z_cell = x_cell * y_cell == 1 ? 255 : 0;
+			img[i][j] = z_cell;
+		}
+	}
+	stbi_write_png("checker.png", width, height, channels, img, width * channels);
+}
