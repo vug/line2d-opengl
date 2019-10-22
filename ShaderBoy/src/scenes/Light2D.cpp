@@ -34,15 +34,9 @@ Light2D::Light2D(GLFWwindow* window)
 	glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, 0));
 	glm::mat4 mvp = projection * view * model;
 
-	m_Shader = std::make_unique<Shader>("res/shaders/Light2Dc.shader");
+	m_Shader = std::make_unique<Shader>("res/shaders/Light2Dd.shader");
 	m_Shader->Bind();
 	m_Shader->SetUniformMat4f("u_MVP", mvp);
-
-	// Unbound/Clear everything
-	//m_VertexArray->Unbind();
-	//m_Shader->Unbind();
-	//m_VertexBuffer->Unbind();
-	//m_IndexBuffer->Unbind();
 }
 
 Light2D::~Light2D() {}
@@ -54,6 +48,8 @@ void Light2D::OnRender()
 
 	m_Shader->Bind();
 	m_Shader->SetUniform1f("u_ReflectionCoef", m_ReflectionCoef);
+	m_Shader->SetUniform1f("u_RefractionCoef", m_RefractionCoef);
+	m_Shader->SetUniform1f("u_EmissionCoef", m_EmissionCoef);
 	int windowWidth, windowHeight;
 	glfwGetWindowSize(m_Window, &windowWidth, &windowHeight);
 	m_Shader->SetUniform2i("u_Resolution", windowWidth, windowHeight);
@@ -74,4 +70,6 @@ void Light2D::OnRender()
 void Light2D::OnImGuiRender()
 {
 	ImGui::SliderFloat("Reflection Coefficient", &m_ReflectionCoef, 0.0, 2.0);
+	ImGui::SliderFloat("Refraction Coefficient", &m_RefractionCoef, 0.0, 5.0);
+	ImGui::SliderFloat("Emission Coefficient", &m_EmissionCoef, 0.0, 5.0);
 }

@@ -23,6 +23,9 @@ void main()
 #define BIAS 1e-6f
 #define MAX_DEPTH 3
 
+#define RFR_OFFSET 1e-3f
+#define RFL_OFFSET 1e-5f
+
 layout(location = 0) out vec4 color;
 
 in vec2 v_TexCoord;
@@ -30,14 +33,10 @@ in vec2 v_TexCoord;
 uniform ivec2 u_Resolution;
 uniform float u_Time;
 uniform vec2 u_Mouse;
+uniform float u_ReflectionCoef;
+uniform float u_RefractionCoef;
+uniform float u_EmissionCoef;
 
-
-/**
- * Random Functions
- */
-float rand(vec2 co) {
-	return fract(sin(dot(co.xy, vec2(12.9898, 78.233))) * 43758.5453);
-}
 
 // A single iteration of Bob Jenkins' One-At-A-Time hashing algorithm.
 uint hash(uint x) {
@@ -81,6 +80,7 @@ struct Result {
 	float emission;
 	float reflection;
 	float refraction;
+	//float absorption;
 };
 
 /**
@@ -156,22 +156,21 @@ float triangleSDF(vec2 p, vec2 a, vec2 b, vec2 c) {
  */
  // Study shape combinations
 Result scene1(vec2 p, vec2 c) {
-	Result a = Result(circleSDF(p, c, 0.1f), 2.0f, 0.0f, 0.0f);
-	Result b = Result(boxSDF(p, vec2(0.5f, 0.5f), 0.0f, vec2(0.3, 0.2f)), 0.0f, 0.5f, 1.5f);
-	Result cc = Result(circleSDF(p, c, 0.05f), 20.0f, 0.0f, 0.0f);
-	Result d = Result(circleSDF(p, vec2(0.5f, 0.2f), 0.35f), 0.0f, 0.2f, 1.5f);
-	Result e = Result(circleSDF(p, vec2(0.5f, 0.8f), 0.35f), 0.0f, 0.2f, 1.5f);
-	Result f = Result(boxSDF(p, vec2(0.5f, 0.5f), 0.0f, vec2(0.2, 0.1f)), 0.0f, 0.2f, 1.5f);
-	Result g = Result(circleSDF(p, vec2(0.5f, 0.12f), 0.35f), 0.0f, 0.2f, 1.5f);
-	Result h = Result(circleSDF(p, vec2(0.5f, 0.87f), 0.35f), 0.0f, 0.2f, 1.5f);
-	Result i = Result(circleSDF(p, vec2(0.5f, 0.5f), 0.2f), 0.0f, 0.2f, 1.5f);
-	Result j = Result(planeSDF(p, vec2(0.5f, 0.5f), vec2(0.0f, -1.0f)), 0.0f, 0.2f, 1.5f);
-	return unionOp(a, b);
+	Result a = Result(circleSDF(p, c, 0.1f), u_EmissionCoef, 0.0f, 0.0f);
+	Result b = Result(boxSDF(p, vec2(0.5f, 0.5f), 0.0f, vec2(0.3, 0.2f)), 0.0f, u_ReflectionCoef, u_RefractionCoef);
+	Result cc = Result(circleSDF(p, c, 0.05f), u_EmissionCoef, 0.0f, 0.0f);
+	Result d = Result(circleSDF(p, vec2(0.5f, 0.2f), 0.35f), 0.0f, u_ReflectionCoef, u_RefractionCoef);
+	Result e = Result(circleSDF(p, vec2(0.5f, 0.8f), 0.35f), 0.0f, u_ReflectionCoef, u_RefractionCoef);
+	Result f = Result(boxSDF(p, vec2(0.5f, 0.5f), 0.0f, vec2(0.2, 0.1f)), 0.0f, u_ReflectionCoef, u_RefractionCoef);
+	Result g = Result(circleSDF(p, vec2(0.5f, 0.12f), 0.35f), 0.0f, u_ReflectionCoef, u_RefractionCoef);
+	Result h = Result(circleSDF(p, vec2(0.5f, 0.87f), 0.35f), 0.0f, u_ReflectionCoef, u_RefractionCoef);
+	Result i = Result(circleSDF(p, vec2(0.5f, 0.5f), 0.2f), 0.0f, u_ReflectionCoef, u_RefractionCoef);
+	Result j = Result(planeSDF(p, vec2(0.5f, 0.5f), vec2(0.0f, -1.0f)), 0.0f, u_ReflectionCoef, u_RefractionCoef);
+	//return unionOp(a, b);
 	//return unionOp(cc, intersectOp(d, e));
 	//return unionOp(cc, subtractOp(f, unionOp(g, h)));
-	//return unionOp(cc, intersectOp(i, j));
+	return unionOp(cc, intersectOp(i, j));
 }
-
 
 Result scene(vec2 p, vec2 c) {
 	return scene1(p, c); // Choose scene
@@ -179,7 +178,7 @@ Result scene(vec2 p, vec2 c) {
 
 
 /**
- * Rendering
+ * Math and Ray utils
  */
 vec2 gradient(vec2 p, vec2 c) {
 	vec2 epx = vec2(EPSILON, 0.0f);
@@ -191,176 +190,99 @@ vec2 gradient(vec2 p, vec2 c) {
 	return normalize(g);
 }
 
-//vec2 reflect(vec2 i, vec2 n) {
-//	float d = dot(i, n) * 2.0f;
-//	return i - n * d;
-//}
+float beerLambert(float a, float d) {
+	return exp(-a * d);
+}
 
-vec3 refract(vec2 i, vec2 n, float eta) {
-	float idotn = dot(i, n);
-	float k = 1.0f - eta * eta * (1.0f - idotn * idotn);
-	if (k < 0.0f)
-		return vec3(0.0); // Total internal reflection
-	float a = eta * idotn + sqrt(k);
-	return vec3(eta * i - a * n, 1.0);
+float fresnelSchlick(float r0, float cos_i) {
+	float a = 1.0f - cos_i;
+	float aa = a * a;
+	return r0 + (1.0f - r0) * aa * aa * a;
 }
 
 
 
 
-struct TraceFrame {
-	// process division
-	int stage;
-	// input arguments
+struct Ray {
 	vec2 o;
 	vec2 d;
+	float coefficient;
 	int depth;
-	// vec2 c; // c does not change in recursive calls
-	// local variables
-	float t;
-	float brightness_acc;
-	Result res;
 };
 
-TraceFrame stack[10];
+Ray stack[8];
 int size = 0;
 
-void push(TraceFrame frame) {
+void push(Ray ray) {
 	size += 1;
-	stack[size - 1] = frame;
+	stack[size - 1] = ray;
 }
 
-TraceFrame pop() {
-	TraceFrame frame = stack[size - 1];
+Ray pop() {
+	Ray ray = stack[size - 1];
 	size -= 1;
-	return frame;
+	return ray;
 }
 
-//float trace(vec2 o, vec2 d, int depth) {
-//	float t = 1e-3f;
-//	float sign = scene(o).sd > 0.0f ? 1.0f : -1.0f;
-//	for (int i = 0; i < max_step && t < max_distance; i++) {
-//		vec2 p = o + d * t
-//		result r = scene(p);
-//		if (r.sd * sign < epsilon) {
-//			didhit = true;
-//			break;
-//		}
-//		t += r.sd * sign;
-//	}
-//	if (!didhit) {
-//		return 0.0f;
-//	}
-//	float sum = r.emissive;
-//	if (depth >= max_depth) {
-//		return sum;
-//	} 
-//	if (r.reflectivity <= 0.0f && r.eta <= 0.0f)) {
-//		return sum;
-//	}
-//
-//	float refl = r.reflectivity;
-//	vec2 n = gradient(p) * sign;
-//	if (r.eta > 0.0f) {
-//		if (vec2 rr = refract(d, n, sign < 0.0f ? r.eta : 1.0f / r.eta))
-//			sum += (1.0f - refl) * trace(p - n * BIAS, rr, depth + 1);
-//		else
-//			refl = 1.0f; // total internal reflection
-//	}
-//	if (refl > 0.0f) {
-//		vec2 rr = reflect(d, n);
-//		sum += refl * trace(p + n * BIAS, rr, depth + 1);
-//	}
-//	return sum;
-//}
 
-float trace2Iter(vec2 o, vec2 d, vec2 c) {
-	float retVal = 0.0f;
 
-	push(TraceFrame(0, o, d, 0, 0.001f, 0.0f, Result(0.0f, 0.0f, 0.0f, 0.0f)));
+float traceIter(vec2 o, vec2 d, vec2 c) {
+	float brightness = 0.0f;
+	push(Ray(o, d, 1.0f, 0));
+
 	while (size > 0) {
-		TraceFrame fr = pop();
-		switch (fr.stage) {
-		case 0:
-			int i = 0;
-			vec2 p;
-			bool didHit = false;
-			float sign = scene(o, c).sd > 0.0f ? 1.0f : -1.0f;
-			for (; i < MAX_STEP && fr.t < MAX_DISTANCE; i++) { // ray-march
-				p = fr.o + fr.d * fr.t;
-				fr.res = scene(p, c);
-				if (fr.res.sd * sign < EPSILON) {
-					didHit = true;
-					break;
-				}
-				fr.t += fr.res.sd;
+		Ray ray = pop();
+		float t = 0.0f;
+		float sign = scene(o, c).sd > 0.0f ? 1.0f : -1.0f;
+		bool didHit = false;
+		Result res;
+		vec2 p;
+		for (int i = 0; i < MAX_STEP && t < MAX_DISTANCE; i++) { // ray-march
+			p = ray.o + ray.d * t;
+			res = scene(p, c);
+			if (res.sd * sign < EPSILON) {
+				didHit = true;
+				break;
 			}
-			if (!didHit) { // nothing hit
-				//retVal = 0.0f;
-				continue;
-			}
-			// something hit
-			fr.brightness_acc = fr.res.emission;
-			if (fr.depth >= MAX_DEPTH) { // can't recoil
-				retVal = fr.brightness_acc;
-				continue;
-			}
-			if (fr.res.reflection <= 0.0f && fr.res.refraction <= 0.0f) {
-				retVal = fr.brightness_acc;
-				continue;
-			}
-			vec2 n = gradient(p, c) * sign;
-			float reflection = fr.res.reflection;
-			if (fr.res.refraction > 0.0f) { // refract
-				float eta = sign < 0.0f ? fr.res.refraction : 1.0f / fr.res.refraction;
-				vec3 rrr = refract(d, n, eta);
-				vec2 rd = rrr.xy;
-				bool isTotalInternalReflection = rrr.z < 0.5;
-				if (isTotalInternalReflection) {
-					reflection = 1.0f;
-				}
-				else {
-					//sum += (1.0f - refl) * trace(p - n * BIAS, rr, depth + 1);
-					fr.stage = 1;
-					push(fr);
-					push(TraceFrame(0, p - n * BIAS, rd, fr.depth + 1, 0.0f, 0.0f, Result(0.0f, 0.0f, 0.0f, 0.0f)));
-				}
-			}
-			if (reflection > 0.0f) { // reflect
-				vec2 ref = reflect(fr.d, n);
-
-				fr.stage = 2;
-				push(fr);
-				push(TraceFrame(0, p + n * BIAS, normalize(ref), fr.depth + 1, 0.0f, 0.0f, Result(0.0f, 0.0f, 0.0f, 0.0f)));
-			}
-			else {
-				retVal = fr.brightness_acc;
-				continue;
-			}
-			break;
-		case 1:
-			fr.brightness_acc += (1.0f - fr.res.reflection) * retVal;
-			if (fr.res.reflection > 0.0f) { // reflect
-				vec2 ref = reflect(fr.d, n);
-				fr.stage = 2;
-				push(fr);
-				push(TraceFrame(0, p + n * BIAS, normalize(ref), fr.depth + 1, 0.0f, 0.0f, Result(0.0f, 0.0f, 0.0f, 0.0f)));
-			}
-			else {
-				retVal = fr.brightness_acc;
-				continue;
-			}
-			break;
-		case 2:
-			fr.brightness_acc += fr.res.reflection * retVal;
-			retVal = fr.brightness_acc;
+			t += res.sd * sign;
+		}
+		if (!didHit) { // nothing hit
 			continue;
-			break;
+		}
+		if (sign < 0) {
+			float absorption = 0.1f;
+			ray.coefficient *= beerLambert(absorption, t); // ray.absorption;
+		}
+		brightness += res.emission * ray.coefficient;
+		if (ray.depth > MAX_DEPTH) {
+			continue;
+		}
+		vec2 n = gradient(p, c) * sign;
+		float eta = sign < 0.0f ? res.refraction : 1.0f / res.refraction;
+		float cos_i = -dot(ray.d, n);
+
+		if (ray.coefficient > 0.0f && res.refraction > 0.0f) {
+			vec2 rf = refract(ray.d, n, eta);
+			if (rf == 0) { // total internal reflection // weird notation!
+				res.reflection = 1.0f;
+			}
+			else {
+				res.reflection = fresnelSchlick(res.reflection, eta < 1.0f ? cos_i : -dot(rf, n));
+				float cc = 1 - res.reflection;
+				//float cc = 1 - res.reflection * 0.5;
+				//float cc = 1.0f;
+				push(Ray(p + rf * 0.05f, rf, ray.coefficient * cc, ray.depth + 1));
+			}
+		}
+		if (length(res.reflection) > 0.0f) {
+			vec2 rf = reflect(ray.d, n);
+			push(Ray(p + rf * 0.0001f, rf, ray.coefficient * res.reflection, ray.depth + 1));
 		}
 	}
-
-	return retVal;
+	return brightness;
 }
+
+
 
 
 float sample(vec2 p, vec2 c) {
@@ -371,7 +293,7 @@ float sample(vec2 p, vec2 c) {
 		//float a = TWO_PI * i / N; // stratified
 		float a = TWO_PI * (i + random(vec3(p, f))) / N; // jittered
 		vec2 dir = vec2(cos(a), sin(a));
-		total += trace2Iter(p, dir, c);
+		total += traceIter(p, dir, c);
 	}
 	return total / N;
 }

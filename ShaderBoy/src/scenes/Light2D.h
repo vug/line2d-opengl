@@ -28,4 +28,6 @@ private:
 	std::unique_ptr<Shader> m_Shader;
 
 	float m_ReflectionCoef = 0.9;
+	float m_RefractionCoef = 0.8;
+	float m_EmissionCoef = 2.0;
 };

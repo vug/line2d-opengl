@@ -21,20 +21,20 @@ Using
 * Visual Studio 2017 C++
 * Cherno's OpenGL C++ tutorial project layout
 * C code for non-realtime CPU rendering found at [github.com/miloyip/light2d](https://github.com/miloyip/light2d)
+* Recursive raymarching implementation to iterative implementation example found at [https://github.com/AmaranthYan/RayMarching](https://github.com/AmaranthYan/RayMarching)
 
-Reflection example
+videos: https://imgur.com/a/DLwvzuj
 
-videos: https://imgur.com/a/fgWCdOS
+Lens refraction example
+![a](https://imgur.com/e2O47SJ)
 
+Concave mirror reflection example
 ![a](https://i.imgur.com/8y5Ms1W.jpg)
 
 Light + Shadow example
-
 ![a](https://i.imgur.com/yK8EHX8.jpg)
 
 TO DO:
 
-* Implement refraction by converting recursive tracing function into iteration via a fixed size array as the stack
-  * Define a struct that'll be used a the scope of a recursive call
 * Ability to choose scene from a file, or on-the-fly
 * Ability to produce a scene via an editor
