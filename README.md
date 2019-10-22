@@ -26,7 +26,7 @@ Using
 videos: https://imgur.com/a/DLwvzuj
 
 Lens refraction example
-![a](https://imgur.com/e2O47SJ)
+![a](https://i.imgur.com/e2O47SJ.png)
 
 Concave mirror reflection example
 ![a](https://i.imgur.com/8y5Ms1W.jpg)
