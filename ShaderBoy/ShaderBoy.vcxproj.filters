@@ -72,6 +72,12 @@
     <ClCompile Include="src\scenes\ClearColor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\scenes\Flashes.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\parameter.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="res\shaders\ConstSolidColor.shader" />
@@ -485,6 +491,7 @@
       <Filter>Header Files</Filter>
     </None>
     <None Include="res\shaders\Light2Dd.shader" />
+    <None Include="res\shaders\Flashes.shader" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Renderer.h">
@@ -1280,6 +1287,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\Scenes\Scene.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\scenes\Flashes.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\parameter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

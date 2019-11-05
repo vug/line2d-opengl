@@ -142,7 +142,9 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\Application.cpp" />
+    <ClCompile Include="src\parameter.cpp" />
     <ClCompile Include="src\scenes\ClearColor.cpp" />
+    <ClCompile Include="src\scenes\Flashes.cpp" />
     <ClCompile Include="src\Scenes\Light2D.cpp" />
     <ClCompile Include="src\vendor\glm\detail\glm.cpp" />
     <ClCompile Include="src\IndexBuffer.cpp" />
@@ -162,6 +164,7 @@
   <ItemGroup>
     <None Include=".gitignore" />
     <None Include="res\shaders\ConstSolidColor.shader" />
+    <None Include="res\shaders\Flashes.shader" />
     <None Include="res\shaders\FullScreenQuad.shader" />
     <None Include="res\shaders\ImageTexture.shader" />
     <None Include="res\shaders\Light2D.shader" />
@@ -305,7 +308,9 @@
     <None Include="src\vendor\glm\gtx\wrap.inl" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\parameter.h" />
     <ClInclude Include="src\Scenes\ClearColor.h" />
+    <ClInclude Include="src\scenes\Flashes.h" />
     <ClInclude Include="src\Scenes\Light2D.h" />
     <ClInclude Include="src\Scenes\Scene.h" />
     <ClInclude Include="src\vendor\glm\common.hpp" />
