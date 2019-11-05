@@ -22,6 +22,7 @@
 #include "scenes/Scene.h"
 #include "scenes/ClearColor.h"
 #include "scenes/Light2D.h"
+#include "scenes/Flashes.h"
 
 GLFWwindow* initialize();
 void finalize();
@@ -33,7 +34,7 @@ int main(void)
 	Renderer renderer;
 
 	Scene* currentScene = new ClearColor();
-	currentScene = new Light2D(window);
+	currentScene = new Flashes(window);
 
 	/* Loop until the user closes the window */
 	glfwSetTime(0.0);
@@ -51,6 +52,7 @@ int main(void)
 			currentScene->OnRender();
 			ImGui::Begin("GUI");
 			currentScene->OnImGuiRender();
+			ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 			ImGui::End();
 		}
 
