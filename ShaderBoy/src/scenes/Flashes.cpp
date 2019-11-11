@@ -44,11 +44,12 @@ Flashes::Flashes(GLFWwindow* window)
 
 	ConstantParameter<int> p1(5);
 	std::cout << "HAYDAR!!" << p1.getValueAt(10.0f) << std::endl;
-	KeyFramedParameter p2({ {0.0, 1.0}, {1.0, 5.0}, {2.0, -3.0} });
+	KeyFramedParameter p2({ {0.0, 1.0}, {1.0, 5.0}, {2.0, -3.0} }, Interpolation::linear, Extrapolation::constant);
+	
 	for (auto& fr : p2.keyFrames) {
 		std::cout << fr.first << " " << fr.second << std::endl;
 	}
-	for (auto &x : { -0.5, 0.1, 0.4, 0.6, 1.1, 1.5, 1.5, 5.5 }) {
+	for (auto &x : { -0.5, 0.1, 0.4, 0.6, 1.1, 1.5, 1.7, 5.5 }) {
 		std::cout << x << " -> " << p2.getValueAt(x) << std::endl;
 	}
 }

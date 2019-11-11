@@ -1,6 +1,7 @@
 #pragma once
 
 #include <map>
+#include <optional>
 #include <vector>
 
 template<typename T>
@@ -18,14 +19,26 @@ public:
 	T getValueAt(double time) override;
 };
 
+// per key-range interpolation will come later
+enum class Interpolation { constant, linear };
+enum class Extrapolation { constant, loop, pingpong };
+enum class WhereInTimeline { before, in, after };
+
+struct SurroundingKeys {
+	std::optional<double> left;
+	std::optional<double> right;
+	WhereInTimeline where;
+};
 
 class KeyFramedParameter : Parameter<double> {
 private:
-	std::map<double, double> keyFrames;
+	Interpolation m_Interpolation;
+	Extrapolation m_Extrapolation;
+	SurroundingKeys getSurroundingKeyFrames(double time);
 public:
-	KeyFramedParameter();
-	KeyFramedParameter(std::map<double, double> keys);
+	KeyFramedParameter(Interpolation, Extrapolation);
+	KeyFramedParameter(std::map<double, double> keys, Interpolation, Extrapolation);
+	std::map<double, double> keyFrames;
 	double getValueAt(double time) override;
 	void addKeyFrame(double time, double value);
-	//void getClosestKeyFrame(double time);
 };
