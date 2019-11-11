@@ -1,6 +1,8 @@
 #include "Flashes.h"
 
 #include <iostream>
+#include <string>
+#include <type_traits>
 
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
@@ -43,14 +45,32 @@ Flashes::Flashes(GLFWwindow* window)
 	m_Shader->SetUniformMat4f("u_MVP", mvp);
 
 	ConstantParameter<int> p1(5);
+	ConstantParameter<std::string> p5("osman");
 	std::cout << "HAYDAR!!" << p1.getValueAt(10.0f) << std::endl;
-	KeyFramedParameter p2({ {0.0, 1.0}, {1.0, 5.0}, {2.0, -3.0} }, Interpolation::linear, Extrapolation::constant);
+	KeyFramedParameter<double> p2({ {0.0, 1.0}, {1.0, 5.0}, {2.0, -3.0} }, Interpolation::linear, Extrapolation::constant);
 	
 	for (auto& fr : p2.keyFrames) {
 		std::cout << fr.first << " " << fr.second << std::endl;
 	}
 	for (auto &x : { -0.5, 0.1, 0.4, 0.6, 1.1, 1.5, 1.7, 5.5 }) {
 		std::cout << x << " -> " << p2.getValueAt(x) << std::endl;
+	}
+
+	std::cout << std::boolalpha;
+	std::cout << std::is_same<int, int>::value << " " << std::is_integral<int>::value << std::endl;
+
+	PVector v1(std::vector<double> { 1.0, 2.0, 3.0 });
+	PVector v2(std::vector<double> { 8.0, 3.0, -1.0 });
+	auto v3 = v1 + v2;
+	v3 = 5.0 * v3;
+	std::cout << v3 << std::endl;
+
+	KeyFramedParameter<PVector<double>> p3({ {0.0, v1}, {2.0, v2} }, Interpolation::linear, Extrapolation::constant);
+	for (auto& fr : p3.keyFrames) {
+		std::cout << fr.first << " " << fr.second << std::endl;
+	}
+	for (auto &x : { -0.5, 0.0, 0.6, 1.0, 1.7, 2.0, 2.4 }) {
+		std::cout << x << " -> " << p3.getValueAt(x) << std::endl;
 	}
 }
 
