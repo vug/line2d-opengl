@@ -317,6 +317,7 @@
     <ClInclude Include="src\scenes\Flashes.h" />
     <ClInclude Include="src\Scenes\Light2D.h" />
     <ClInclude Include="src\Scenes\Scene.h" />
+    <ClInclude Include="src\vendor\boost\operators.hpp" />
     <ClInclude Include="src\vendor\glm\common.hpp" />
     <ClInclude Include="src\vendor\glm\detail\compute_common.hpp" />
     <ClInclude Include="src\vendor\glm\detail\compute_vector_relational.hpp" />
