@@ -1,14 +1,16 @@
 #pragma once
 
 #include <memory>
+#include <vector>
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
 #include "Scene.h"
-
 #include "VertexBuffer.h"
 #include "VertexBufferLayout.h"
+
+#include "parameter.h"
 
 class Flashes : public Scene
 {
@@ -31,4 +33,5 @@ private:
 	float m_ReflectionCoef = 0.9;
 	float m_RefractionCoef = 0.8;
 	float m_EmissionCoef = 2.0;
+	KeyFramedParameter<double> emitParam;
 };

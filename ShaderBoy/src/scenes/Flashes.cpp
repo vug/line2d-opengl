@@ -11,10 +11,9 @@
 #include "Renderer.h"
 #include "VertexBufferLayout.h"
 
-#include "parameter.h"
-
 Flashes::Flashes(GLFWwindow* window)
-	: m_Window(window)
+	: m_Window(window), 
+	emitParam({ {0.0, 0.0}, {1.0, 0.1}, {2.0, 1.0} }, Interpolation::linear, Extrapolation::pingpong)
 {
 	float quad[] = {
 		-1.0f, -1.0f,   0.0f, 0.0f, // 0
@@ -47,12 +46,12 @@ Flashes::Flashes(GLFWwindow* window)
 	ConstantParameter<int> p1(5);
 	ConstantParameter<std::string> p5("osman");
 	std::cout << "HAYDAR!!" << p1.getValueAt(10.0f) << std::endl;
-	KeyFramedParameter<double> p2({ {0.0, 1.0}, {1.0, 5.0}, {2.0, -3.0} }, Interpolation::linear, Extrapolation::constant);
+	KeyFramedParameter<double> p2({ {0.0, 1.0}, {1.0, 5.0}, {2.0, -3.0} }, Interpolation::linear, Extrapolation::loop);
 	
 	for (auto& fr : p2.keyFrames) {
 		std::cout << fr.first << " " << fr.second << std::endl;
 	}
-	for (auto &x : { -0.5, 0.1, 0.4, 0.6, 1.1, 1.5, 1.7, 5.5 }) {
+	for (auto &x : { -1.9, -1.4, -0.9, -0.4, 0.1, 0.6, 1.1, 1.6, 2.1, 2.6, 3.1, 3.6, 4.1}) {
 		std::cout << x << " -> " << p2.getValueAt(x) << std::endl;
 	}
 
@@ -78,7 +77,8 @@ Flashes::~Flashes() {}
 
 void Flashes::OnUpdate(double time)
 {
-	m_EmissionCoef = sin(2 * 3.14159265 * time) + 1.0;
+	//m_EmissionCoef = sin(2 * 3.14159265 * time) + 1.0;
+	m_EmissionCoef = emitParam.getValueAt(time);
 }
 
 void Flashes::OnRender()
