@@ -1,5 +1,6 @@
 #include "parameter.h"
 
+#include <cmath>
 #include <string>
 
 template<typename T>
@@ -92,38 +93,74 @@ T KeyFramedParameter<T>::getValueAt(double t) {
 	if (keyFrames.find(t) != keyFrames.end()) {
 		return keyFrames[t];
 	}
+
+	double first = std::begin(keyFrames)->first;
+	double last = std::rbegin(keyFrames)->first;
+	WhereInTimeline w;
+	if (t < first) {
+		w = WhereInTimeline::before;
+	}
+	else if (t > last) {
+		w = WhereInTimeline::after;
+	}
+	else {
+		w = WhereInTimeline::in;
+	}
+
+	if (w != WhereInTimeline::in) {
+		return extrapolate(t, w);
+	}
+	else {
+		return interpolate(t);
+	}
+}
+
+template<typename T>
+T KeyFramedParameter<T>::interpolate(double t) {
+	// TODO: we made sure that both keys always exist
+	// (as long as we have at least two keys)
+	// optionals are not necessary. remove them.
 	SurroundingKeys keysAround = getSurroundingKeyFrames(t);
 	double left = keysAround.left.value_or(-1.0);
 	double right = keysAround.right.value_or(-1.0);
-	switch (keysAround.where) {
-		case WhereInTimeline::before:
-			switch (m_Extrapolation) {
-			case Extrapolation::constant:
-				return keyFrames[right];
-				break;
-			}
-			break;
-		case WhereInTimeline::after:
-			switch (m_Extrapolation) {
-			case Extrapolation::constant:
-				return keyFrames[left];
-				break;
-			}
-			break;
-		case WhereInTimeline::in:
-			switch (m_Interpolation) {
-			case Interpolation::constant:
-				return keyFrames[left];
-				break;
-			case Interpolation::linear:
-				auto leftVal = keyFrames[left];
-				auto rightVal = keyFrames[right];
-				double mix = (t - left) / (right - left);
-				return (1.0 - mix) * leftVal + mix * rightVal;
-				break;
-			}
-			break;
+
+	switch (m_Interpolation) {
+	case Interpolation::constant:
+		return keyFrames[left];
+
+	case Interpolation::linear:
+		auto leftVal = keyFrames[left];
+		auto rightVal = keyFrames[right];
+		double mix = (t - left) / (right - left);
+		return (1.0 - mix) * leftVal + mix * rightVal;
 	}
+}
+
+template<typename T>
+T KeyFramedParameter<T>::extrapolate(double t, WhereInTimeline w) {
+	double first = std::begin(keyFrames)->first;
+	double last = std::rbegin(keyFrames)->first;
+	double duration = last - first;
+	double sinceFirst = t - first;
+
+	double t_in;
+	switch (m_Extrapolation) {
+	case Extrapolation::constant:
+		return (w == WhereInTimeline::before) ? keyFrames[first] : keyFrames[last];
+
+	case Extrapolation::loop:
+		t_in = std::fmod(sinceFirst, duration) + (sinceFirst < 0 ? duration : 0.0);
+		return interpolate(t_in + first);
+
+	case Extrapolation::pingpong:
+		bool isForward = ((int)std::floor(sinceFirst / duration)) % 2 == 0;
+		t_in = std::fmod(sinceFirst, duration) + (sinceFirst < 0 ? duration : 0.0);
+		if (!isForward) {
+			t_in = last - (t_in - first);
+		}
+		return interpolate(t_in + first);
+	}
+
 }
 
 // To prevent linker errors

@@ -41,6 +41,8 @@ private:
 	Interpolation m_Interpolation;
 	Extrapolation m_Extrapolation;
 	SurroundingKeys<T> getSurroundingKeyFrames(double time);
+	T interpolate(double time);
+	T extrapolate(double time, WhereInTimeline w);
 public:
 	KeyFramedParameter(Interpolation, Extrapolation);
 	KeyFramedParameter(std::map<double, T> keys, Interpolation, Extrapolation);
