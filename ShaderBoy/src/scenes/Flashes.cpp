@@ -13,7 +13,7 @@
 
 Flashes::Flashes(GLFWwindow* window)
 	: m_Window(window), 
-	emitParam({ {0.0, 0.0}, {1.0, 0.1}, {2.0, 1.0} }, Interpolation::linear, Extrapolation::pingpong)
+	emitParam({ {0.0, 0.1}, {1.0, 0.3}, {1.5, 1.0} }, Interpolation::linear, Extrapolation::pingpong)
 {
 	float quad[] = {
 		-1.0f, -1.0f,   0.0f, 0.0f, // 0

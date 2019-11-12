@@ -155,20 +155,25 @@ float triangleSDF(vec2 p, vec2 a, vec2 b, vec2 c) {
  * Scenes
  */
  // Study shape combinations
-Result scene1(vec2 p, vec2 c) {
-	Result a = Result(circleSDF(p, c, 0.1f), u_EmissionCoef, 0.0f, 0.0f);
-	Result b = Result(boxSDF(p, vec2(0.5f, 0.5f), 0.0f, vec2(0.3, 0.2f)), 0.0f, u_ReflectionCoef, u_RefractionCoef);
-	
+Result scene1(vec2 p, vec2 c) {	
 	Result cc = Result(circleSDF(p, c, 0.05f), u_EmissionCoef, 0.0f, 0.0f);
-	
+
+	Result f = Result(boxSDF(p, vec2(0.5f, 0.5f), 0.0f, vec2(0.2, 0.1f)), 0.0f, u_ReflectionCoef, u_RefractionCoef);
+	Result g = Result(circleSDF(p, vec2(0.5f, 0.12f), 0.35f), 0.0f, u_ReflectionCoef, u_RefractionCoef);
+	Result h = Result(circleSDF(p, vec2(0.5f, 0.87f), 0.35f), 0.0f, u_ReflectionCoef, u_RefractionCoef);
+
+	return unionOp(cc, subtractOp(f, unionOp(g, h)));
+}
+
+Result scene2(vec2 p, vec2 c) {
+	Result cc = Result(circleSDF(p, c, 0.05f), u_EmissionCoef, 0.0f, 0.0f);
 	Result cd = Result(circleSDF(p, c + vec2(cos(4 * u_Time), sin(3 * u_Time)) * 0.1, 0.01f), sin(TWO_PI * 2 * u_Time) + 1, 0.0f, 0.0f);
 	Result ce = Result(circleSDF(p, c + vec2(cos(2 * u_Time), sin(5 * u_Time)) * 0.07, 0.01f), u_EmissionCoef, 0.0f, 0.0f);
 
+	//Result a = Result(circleSDF(p, c, 0.1f), u_EmissionCoef, 0.0f, 0.0f);
+	//Result b = Result(boxSDF(p, vec2(0.5f, 0.5f), 0.0f, vec2(0.3, 0.2f)), 0.0f, u_ReflectionCoef, u_RefractionCoef);
 	Result d = Result(circleSDF(p, vec2(0.5f, 0.1f), 0.35f), 0.0f, u_ReflectionCoef, u_RefractionCoef);
 	Result e = Result(circleSDF(p, vec2(0.5f, 0.7f), 0.35f), 0.0f, u_ReflectionCoef, u_RefractionCoef);
-	//Result f = Result(boxSDF(p, vec2(0.5f, 0.5f), 0.0f, vec2(0.2, 0.1f)), 0.0f, u_ReflectionCoef, u_RefractionCoef);
-	//Result g = Result(circleSDF(p, vec2(0.5f, 0.12f), 0.35f), 0.0f, u_ReflectionCoef, u_RefractionCoef);
-	//Result h = Result(circleSDF(p, vec2(0.5f, 0.87f), 0.35f), 0.0f, u_ReflectionCoef, u_RefractionCoef);
 
 	mat2 rot = mat2(
 		cos(u_Time), -sin(u_Time),
@@ -181,7 +186,6 @@ Result scene1(vec2 p, vec2 c) {
 	Result i = Result(circleSDF(q, vec2(0), 0.2f), 0.0f, u_ReflectionCoef, u_RefractionCoef);
 	Result j = Result(planeSDF(q, vec2(0), vec2(0.0f, -1.0f)), 0.0f, u_ReflectionCoef, u_RefractionCoef);
 
-	//return unionOp(cc, subtractOp(f, unionOp(g, h)));
 	return unionOp(unionOp(unionOp(unionOp(cc, cd), ce), intersectOp(i, j)), intersectOp(d, e));
 }
 
